@@ -21,9 +21,12 @@ function DashboardLayout() {
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="secondary-btn inline-flex min-h-[2.75rem] items-center rounded-lg px-4 text-sm font-semibold"
+              aria-label="Open menu"
+              className="flex h-10 w-10 flex-col items-center justify-center gap-[5px] rounded-lg border border-gold/25 bg-surface transition-colors hover:border-gold/50"
             >
-              Open Menu
+              <span className="block h-[2px] w-5 rounded-full bg-gold" />
+              <span className="block h-[2px] w-5 rounded-full bg-gold" />
+              <span className="block h-[2px] w-5 rounded-full bg-gold" />
             </button>
           </div>
 

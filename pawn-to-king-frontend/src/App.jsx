@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "./components/PublicLayout";
+import SemiPublicLayout from "./components/SemiPublicLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import DashboardLayout from "./components/DashboardLayout";
@@ -31,8 +32,6 @@ const publicRoutes = [
 
 const protectedRoutes = [
   { path: "/dashboard", element: <DashboardPage /> },
-  { path: "/curriculum", element: <CurriculumPage /> },
-  { path: "/curriculum/:level", element: <CurriculumLevelPage /> },
   { path: "/topic/:level/:topicNumber", element: <TopicDetailPage /> },
   { path: "/homework", element: <HomeworkPage /> },
   { path: "/classroom", element: <ClassroomPage /> },
@@ -87,6 +86,12 @@ function App() {
         {publicRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
         ))}
+      </Route>
+
+      {/* Curriculum — public for guests, dashboard-wrapped for logged-in users */}
+      <Route element={<SemiPublicLayout />}>
+        <Route path="/curriculum" element={<CurriculumPage />} />
+        <Route path="/curriculum/:level" element={<CurriculumLevelPage />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>

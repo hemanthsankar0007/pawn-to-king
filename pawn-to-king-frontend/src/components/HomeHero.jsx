@@ -249,12 +249,7 @@ function HomeHero() {
   return (
     <section
       ref={ref}
-      className="relative isolate min-h-screen overflow-hidden"
-      style={{
-        width: "100vw",
-        marginLeft: "calc(50% - 50vw)",
-        marginRight: "calc(50% - 50vw)",
-      }}
+      className="relative w-full min-h-screen flex items-center overflow-hidden"
     >
       {/* Full-bleed background image */}
       <motion.img
@@ -268,92 +263,90 @@ function HomeHero() {
         transition={{ duration: 1.4, ease: "easeOut" }}
       />
 
-      {/* Left-heavy overlay for text readability */}
-      <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(11,15,25,0.92)_0%,rgba(11,15,25,0.65)_50%,rgba(11,15,25,0.25)_100%)]" />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/70" />
 
-      {/* Bottom fade — blends into page bg and hides watermark */}
-      <div className="absolute inset-x-0 bottom-0 h-[35%] bg-[linear-gradient(to_top,#0b0f19_0%,#0b0f19_15%,transparent_100%)]" />
+      {/* Bottom fade — blends into page bg */}
+      <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(to_top,#0b0f19_0%,#0b0f19_10%,transparent_100%)]" />
 
-      {/* Content sits on top */}
-      <div className="relative z-10 flex min-h-screen items-center">
-        <div className="w-full max-w-7xl px-6 py-24 lg:pl-20 lg:pr-12">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-16">
 
-          {/* Subtitle */}
-          <motion.p
-            className="mb-5 text-sm uppercase tracking-[0.25em] text-gold"
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+        {/* Eyebrow */}
+        <motion.p
+          className="text-xs sm:text-sm tracking-widest uppercase text-gold mb-4"
+          initial={{ opacity: 0, x: -30 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          Think Like a Pro
+        </motion.p>
+
+        {/* Letter-by-letter heading */}
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-white max-w-xl">
+          <motion.span
+            className="inline-flex flex-wrap"
+            variants={containerVariants}
+            initial="hidden"
+            animate={controls}
           >
-            Think Like a Pro
-          </motion.p>
-
-          {/* Letter-by-letter heading */}
-          <h1 className="font-display text-[clamp(2.4rem,5.5vw,5.8rem)] leading-tight text-text">
-            <motion.span
-              className="inline-flex flex-wrap"
-              variants={containerVariants}
-              initial="hidden"
-              animate={controls}
-            >
-              {sentence.map((char, i) => (
-                <motion.span
-                  key={i}
-                  variants={letterVariants}
-                  style={{ whiteSpace: char === " " ? "pre" : "normal" }}
-                >
-                  {char === " " ? "\u00A0" : char}
-                </motion.span>
-              ))}
-
-              {/* Blinking gold dot */}
+            {sentence.map((char, i) => (
               <motion.span
-                className="text-gold"
-                variants={dotVariants}
-                animate={dotControls}
-                initial={{ opacity: 1 }}
+                key={i}
+                variants={letterVariants}
+                style={{ whiteSpace: char === " " ? "pre" : "normal" }}
               >
-                .
+                {char === " " ? "\u00A0" : char}
               </motion.span>
+            ))}
+
+            {/* Blinking gold dot */}
+            <motion.span
+              className="text-gold"
+              variants={dotVariants}
+              animate={dotControls}
+              initial={{ opacity: 1 }}
+            >
+              .
             </motion.span>
-          </h1>
+          </motion.span>
+        </h1>
 
-          {/* Description */}
-          <motion.p
-            className="mt-6 max-w-xl text-base leading-[1.8] text-text/80 md:text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.7, delay: 0.9, ease: "easeOut" }}
-          >
-            A Structured 160-Day Chess Mastery Program
-          </motion.p>
+        {/* Description */}
+        <motion.p
+          className="mt-6 text-base sm:text-lg text-gray-300 max-w-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7, delay: 0.9, ease: "easeOut" }}
+        >
+          A Structured 160-Day Chess Mastery Program
+        </motion.p>
 
-          {/* Buttons */}
-          <motion.div
-            className="mt-10 flex flex-wrap gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.7, delay: 1.1, ease: "easeOut" }}
-          >
-            <MagneticWrapper className="inline-block" strength={4}>
-              <Link
-                to="/login"
-                className="primary-btn inline-flex rounded-lg px-6 py-3 text-sm font-semibold"
-              >
-                Login
-              </Link>
-            </MagneticWrapper>
+        {/* Buttons */}
+        <motion.div
+          className="mt-8 flex flex-col sm:flex-row gap-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7, delay: 1.1, ease: "easeOut" }}
+        >
+          <MagneticWrapper className="w-full sm:w-auto" strength={4}>
+            <Link
+              to="/login"
+              className="flex w-full items-center justify-center rounded-md border border-gold px-6 py-3 text-sm font-semibold text-gold transition-colors hover:bg-gold/10 sm:w-auto"
+            >
+              Login
+            </Link>
+          </MagneticWrapper>
 
-            <MagneticWrapper className="inline-block" strength={4}>
-              <a
-                href="#program-structure"
-                className="secondary-btn inline-flex rounded-lg px-6 py-3 text-sm font-semibold"
-              >
-                View Program
-              </a>
-            </MagneticWrapper>
-          </motion.div>
-        </div>
+          <MagneticWrapper className="w-full sm:w-auto" strength={4}>
+            <a
+              href="#program-structure"
+              className="flex w-full items-center justify-center rounded-md bg-gold px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-gold-hover sm:w-auto"
+            >
+              View Program
+            </a>
+          </MagneticWrapper>
+        </motion.div>
       </div>
     </section>
   );

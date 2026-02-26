@@ -87,8 +87,22 @@ select {
 .home-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding-left: 3rem;
-  padding-right: 3rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .home-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
 }
 
 .hero-grid {
@@ -130,15 +144,36 @@ select {
 }
 
 .coach-section {
-  margin-top: 6rem;
-  margin-bottom: 6rem;
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .coach-section {
+    margin-top: 6rem;
+    margin-bottom: 6rem;
+  }
 }
 
 .coach-grid {
   display: grid;
-  grid-template-columns: 45% 55%;
+  grid-template-columns: 1fr;
   align-items: center;
-  gap: 5rem;
+  gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .coach-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .coach-grid {
+    grid-template-columns: 45% 55%;
+    gap: 5rem;
+  }
 }
 
 .coach-image-wrapper {
@@ -857,21 +892,13 @@ select option {
     max-height: 420px;
   }
 
-  .coach-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
   .coach-image-wrapper {
     max-width: 520px;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 768px) {
-  .coach-grid {
-    grid-template-columns: 1fr;
-  }
-
   .social-icon {
     position: static;
     opacity: 1;
