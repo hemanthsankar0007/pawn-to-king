@@ -80,9 +80,8 @@ function LandingPage() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_20%,rgba(212,175,55,0.14),transparent_38%)]" />
       <div className="pointer-events-none absolute right-[-8%] top-[15%] -z-10 h-64 w-64 rounded-full bg-gold/20 blur-[120px]" />
 
-      <HomeHero />
-
       <div className="home-container">
+        <HomeHero />
         <SectionBanner label="About the Coach" from="left" />
         <ContentReveal from="right">
           <AboutCoach />
