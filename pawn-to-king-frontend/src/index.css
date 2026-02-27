@@ -433,7 +433,19 @@ select option {
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
 }
 
 .header,
@@ -840,16 +852,12 @@ select option {
 }
 
 @media (max-width: 639px) {
-  .container {
-    padding: 0 1rem;
-  }
-
   .site-main {
     padding-top: calc(var(--header-height) + 0.85rem);
   }
 
   .level-hero-shell {
-    max-height: 300px;
+    max-height: 320px;
     aspect-ratio: 1 / 1;
   }
 
@@ -873,6 +881,16 @@ select option {
 
   .time-slot-row {
     flex-wrap: wrap;
+  }
+
+  /* Prevent banner from creating horizontal overflow on narrow viewports */
+  .section-banner-track {
+    overflow: hidden;
+  }
+
+  /* Tighter dashboard card padding on phones */
+  .glass-card {
+    padding: 1rem;
   }
 }
 

@@ -203,7 +203,7 @@ import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import MagneticWrapper from "./MagneticWrapper";
-import homeImage from "../../assets/home.png";
+import homeImage from "../../assets/home.webp";
 
 const sentence = "From Pawn to King".split("");
 

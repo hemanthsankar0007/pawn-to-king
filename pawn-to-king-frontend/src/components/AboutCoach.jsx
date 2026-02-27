@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AnimatedCounter from "./AnimatedCounter";
-import coachImage from "../../assets/Hemanth .jpg";
+import coachImage from "../../assets/Hemanth .webp";
 
 function AboutCoach() {
   const wrapperRef = useRef(null);

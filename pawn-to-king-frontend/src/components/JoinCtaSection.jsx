@@ -36,7 +36,7 @@ function JoinCtaSection({ onJoin }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-          className="mt-8 self-start inline-flex items-center gap-2 rounded-xl px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-xl"
+          className="mt-8 w-full sm:w-auto sm:self-start inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-xl"
           style={{
             background: "linear-gradient(90deg, #b8952e 0%, #e8c84a 40%, #f5d96b 60%, #d4af37 100%)",
             color: "#0b0f19",
@@ -52,7 +52,7 @@ function JoinCtaSection({ onJoin }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
-          className="mt-12 border-t border-gold/20 pt-8 max-w-xl"
+          className="mt-12 border-t border-gold/20 pt-8 w-full max-w-xl"
         >
           <h4 className="text-xl font-semibold text-gold mb-3">
             Contact Us

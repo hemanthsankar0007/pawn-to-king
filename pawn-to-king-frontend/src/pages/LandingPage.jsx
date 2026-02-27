@@ -18,7 +18,7 @@ function SectionBanner({ label, from = "left" }) {
   return (
     <div
       ref={ref}
-      className="overflow-hidden py-5"
+      className="section-banner-track overflow-hidden py-4"
       style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
       <motion.div
@@ -53,8 +53,8 @@ function ContentReveal({ children, from = "right" }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: from === "right" ? 90 : -90 }}
-      animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: from === "right" ? 90 : -90 }}
+      initial={{ opacity: 0, x: from === "right" ? 40 : -40 }}
+      animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: from === "right" ? 40 : -40 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
@@ -90,7 +90,7 @@ function LandingPage() {
         <SectionBanner label="Program Structure" from="right" />
         <ContentReveal from="left">
         <RevealSection id="program-structure" className="py-12 text-left lg:py-16">
-          <h2 className="mt-3 font-display text-[clamp(2.2rem,3.4vw,3.8rem)] font-bold">
+          <h2 className="mt-3 font-display text-[clamp(1.55rem,3.4vw,3.8rem)] font-bold leading-tight">
             Six Levels. One Consistent Ascent.
           </h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

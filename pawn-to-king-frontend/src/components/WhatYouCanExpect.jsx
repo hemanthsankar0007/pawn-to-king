@@ -55,7 +55,7 @@ function ExpectationBlock({ item, index }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
   const reverse = index % 2 === 1;
-  const xOffset = reverse ? 56 : -56;
+  const xOffset = reverse ? 32 : -32;
 
   return (
     <motion.article
@@ -63,24 +63,24 @@ function ExpectationBlock({ item, index }) {
       initial={{ opacity: 0, x: xOffset, y: 18 }}
       animate={inView ? { opacity: 1, x: 0, y: 0 } : undefined}
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1], delay: index * 0.2 }}
-      className={`expectation-card magnetic-target grid gap-6 rounded-2xl border border-gold/30 bg-card/80 p-8 md:min-h-[13rem] ${
+      className={`expectation-card magnetic-target rounded-2xl border border-gold/30 bg-card/80 p-5 md:p-8 md:min-h-[13rem] grid gap-4 md:gap-6 ${
         reverse ? "md:grid-cols-[1fr_auto]" : "md:grid-cols-[auto_1fr]"
       } md:items-start`}
     >
       {reverse ? (
         <>
-          <div className="max-w-[800px] space-y-3">
-            <h3 className="font-display text-[clamp(1.5rem,2vw,2rem)] font-bold leading-tight">{item.title}</h3>
-            <p className="text-[clamp(1rem,1.1vw,1.1rem)] leading-[1.7] text-text/90">{item.summary}</p>
+          <div className="space-y-2 order-1 md:order-none">
+            <h3 className="font-display text-[clamp(1.15rem,2vw,2rem)] font-bold leading-tight">{item.title}</h3>
+            <p className="text-sm md:text-[clamp(1rem,1.1vw,1.1rem)] leading-[1.7] text-text/90">{item.summary}</p>
           </div>
           <IconBadge />
         </>
       ) : (
         <>
           <IconBadge />
-          <div className="max-w-[800px] space-y-3">
-            <h3 className="font-display text-[clamp(1.5rem,2vw,2rem)] font-bold leading-tight">{item.title}</h3>
-            <p className="text-[clamp(1rem,1.1vw,1.1rem)] leading-[1.7] text-text/90">{item.summary}</p>
+          <div className="space-y-2">
+            <h3 className="font-display text-[clamp(1.15rem,2vw,2rem)] font-bold leading-tight">{item.title}</h3>
+            <p className="text-sm md:text-[clamp(1rem,1.1vw,1.1rem)] leading-[1.7] text-text/90">{item.summary}</p>
           </div>
         </>
       )}
@@ -90,12 +90,12 @@ function ExpectationBlock({ item, index }) {
 
 function WhatYouCanExpect() {
   return (
-    <section className="expectation-track py-12 text-left md:py-20">
-      <h2 className="expectation-title mt-3 max-w-4xl text-left font-display font-bold text-text">
+    <section className="expectation-track py-10 text-left md:py-20">
+      <h2 className="expectation-title mt-3 max-w-4xl text-left font-display font-bold text-text text-[clamp(1.5rem,3vw,3rem)]">
         Your transformation from beginner to competitive thinker.
       </h2>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8 grid gap-4 md:gap-6 lg:grid-cols-2">
         {EXPECTATIONS.map((item, index) => (
           <ExpectationBlock key={item.title} item={item} index={index} />
         ))}
