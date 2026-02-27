@@ -43,7 +43,7 @@ function SidebarContent({ userName, links, onNavigate, onLogout }) {
         <p className="mt-1 font-medium text-text">{userName}</p>
       </div>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
         {links.map((link) => (
           <NavLink key={link.to} to={link.to} className={linkClass} onClick={onNavigate}>
             {link.label}
@@ -98,7 +98,7 @@ function Sidebar({ isOpen, onClose }) {
       />
 
       <aside
-        className={`fixed left-0 top-20 z-50 flex h-[calc(100vh-5rem)] w-72 flex-col border-r border-gold/20 bg-card/95 p-6 backdrop-blur transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed left-0 top-20 z-50 flex h-[calc(100vh-5rem)] w-[min(86vw,20rem)] flex-col border-r border-gold/20 bg-card/95 p-4 sm:p-6 backdrop-blur transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

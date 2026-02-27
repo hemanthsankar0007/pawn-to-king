@@ -20,27 +20,29 @@ function AccordionTopic({ topicNumber, topic, isOpen, onClick, themeColor }) {
         onClick={onClick}
         aria-expanded={isOpen}
         aria-controls={panelId}
-        className="flex w-full items-start gap-3 px-5 py-5 text-left md:px-6"
+        className="grid w-full grid-cols-[auto_1fr] items-start gap-x-3 gap-y-2 px-4 py-4 text-left md:flex md:items-start md:gap-3 md:px-6 md:py-5"
       >
         <span className="topic-number-badge">{topicNumber}</span>
         <p className="min-w-0 flex-1 whitespace-normal break-words font-display text-[clamp(1.15rem,1.35vw,1.45rem)] font-semibold leading-[1.45] text-text">
           {topic.title}
         </p>
-        <span
-          className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
-            difficultyStyles[topic.difficulty] || difficultyStyles.Intermediate
-          }`}
-        >
-          {topic.difficulty}
-        </span>
-        <motion.span
-          animate={{ rotate: isOpen ? 90 : 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="text-gold"
-          aria-hidden="true"
-        >
-          {"\u276f"}
-        </motion.span>
+        <div className="col-span-2 flex w-full items-center justify-end gap-2 md:ml-auto md:w-auto">
+          <span
+            className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
+              difficultyStyles[topic.difficulty] || difficultyStyles.Intermediate
+            }`}
+          >
+            {topic.difficulty}
+          </span>
+          <motion.span
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="text-gold"
+            aria-hidden="true"
+          >
+            {"\u276f"}
+          </motion.span>
+        </div>
       </button>
 
       <AnimatePresence initial={false}>

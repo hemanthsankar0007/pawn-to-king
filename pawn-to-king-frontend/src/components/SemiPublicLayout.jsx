@@ -28,9 +28,9 @@ function SemiPublicLayout() {
     return (
       <Layout mainClassName="dashboard-main">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="dashboard-content lg:pl-72">
-          <div className="container">
-            <div className="mb-4 lg:hidden">
+        <div className="dashboard-content min-w-0 lg:pl-72">
+          <div className="container min-w-0">
+            <div className="mb-3 lg:hidden">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
@@ -42,7 +42,7 @@ function SemiPublicLayout() {
                 <span className="block h-[2px] w-5 rounded-full bg-gold" />
               </button>
             </div>
-            <div className="pb-8 md:pb-10">
+            <div className="min-w-0 pb-8 md:pb-10">
               <Outlet />
             </div>
           </div>

@@ -3,6 +3,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 const {
   createBatch,
+  updateBatch,
   getBatches,
   getBatchStudents,
   getStudentsForBatchAssignment,
@@ -23,6 +24,7 @@ router.use(authMiddleware, adminMiddleware);
 
 router.post("/batches", createBatch);
 router.get("/batches", getBatches);
+router.patch("/batches/:batchId", updateBatch);
 router.delete("/batches/:batchId", deleteBatch);
 router.get("/batches/:batchId/students", getBatchStudents);
 router.patch("/batches/:batchId/remove-student/:studentId", removeStudentFromBatch);

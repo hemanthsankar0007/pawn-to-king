@@ -10,6 +10,22 @@ export const loginUser = async (payload) => {
   return response.data;
 };
 
+export const changeUserPassword = async (payload) => {
+  try {
+    const response = await apiClient.patch("/auth/change-password", payload);
+    return response.data;
+  } catch (error) {
+    const message = String(error?.response?.data?.message || "").toLowerCase();
+
+    if (message.includes("admin access required")) {
+      const fallback = await apiClient.patch("/admin/auth/change-password", payload);
+      return fallback.data;
+    }
+
+    throw error;
+  }
+};
+
 export const getDashboard = async () => {
   const response = await apiClient.get("/dashboard");
   return response.data;
@@ -125,6 +141,11 @@ export const resetAdminStudentPassword = async (studentId) => {
   return response.data;
 };
 
+export const deleteAdminStudent = async (studentId) => {
+  const response = await apiClient.delete(`/admin/students/${studentId}`);
+  return response.data;
+};
+
 export const createAdminBatch = async (payload) => {
   const response = await apiClient.post("/admin/timetable/batches", payload);
   return response.data;
@@ -134,6 +155,11 @@ export const getAdminBatches = async (level = "") => {
   const response = await apiClient.get("/admin/timetable/batches", {
     params: level ? { level } : undefined
   });
+  return response.data;
+};
+
+export const updateAdminBatch = async (batchId, payload) => {
+  const response = await apiClient.patch(`/admin/timetable/batches/${batchId}`, payload);
   return response.data;
 };
 

@@ -18,6 +18,18 @@
   box-sizing: border-box;
 }
 
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
 html,
 body,
 #root {
@@ -452,8 +464,24 @@ select option {
 .header-mobile {
   width: 100%;
   margin: 0;
-  padding-left: 1.5rem;
-  padding-right: 2.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .header,
+  .header-mobile {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header,
+  .header-mobile {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 .header {
@@ -473,6 +501,7 @@ select option {
 
 .dashboard-content {
   min-height: calc(100vh - var(--header-height));
+  min-width: 0;
 }
 
 .back-button {
@@ -883,6 +912,15 @@ select option {
     flex-wrap: wrap;
   }
 
+  .coach-grid {
+    gap: 1.5rem;
+  }
+
+  .coach-image-wrapper {
+    margin-left: 0;
+    max-width: 100%;
+  }
+
   /* Prevent banner from creating horizontal overflow on narrow viewports */
   .section-banner-track {
     overflow: hidden;
@@ -895,6 +933,11 @@ select option {
 }
 
 @media (max-width: 1023px) {
+  .dashboard-content .container {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -917,11 +960,15 @@ select option {
 }
 
 @media (max-width: 768px) {
+  .social-arms-svg {
+    display: none;
+  }
+
   .social-icon {
     position: static;
     opacity: 1;
     transform: none;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     display: inline-flex;
     margin-right: 0.5rem;
   }

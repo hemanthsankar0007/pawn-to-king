@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "admin"],
       default: "student"
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: false
+    },
     batchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",

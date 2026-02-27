@@ -8,10 +8,8 @@ const {
 
 const router = express.Router();
 
-router.use(authMiddleware, adminMiddleware);
-
-router.get("/students", getStudentsForBatchAssignment);
-router.put("/batch/assign", assignStudentsToBatch);
-router.put("/batches/:batchId/assign", assignStudentsToBatch);
+router.get("/students", authMiddleware, adminMiddleware, getStudentsForBatchAssignment);
+router.put("/batch/assign", authMiddleware, adminMiddleware, assignStudentsToBatch);
+router.put("/batches/:batchId/assign", authMiddleware, adminMiddleware, assignStudentsToBatch);
 
 module.exports = router;

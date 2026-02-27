@@ -113,7 +113,8 @@ function CurriculumLevelPage() {
   const topics = flattenTopics(levelData.sections);
 
   return (
-    <PageTransition className="mx-auto max-w-[1400px] px-4 py-8 md:px-6 md:py-10">
+    <div className="overflow-x-auto">
+      <PageTransition className="mx-auto w-full min-w-[340px] max-w-[1400px] px-4 py-8 md:px-6 md:py-10">
       <motion.section
         initial={{ opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
@@ -154,7 +155,7 @@ function CurriculumLevelPage() {
               {levelName} ({config.rating})
             </p>
             <h1 className="level-title mt-3 font-display font-bold text-text">{config.title}</h1>
-            <p className="level-body mt-3 text-text/88">{config.subtitle}</p>
+            <p className="level-body mt-3 break-words text-text/88">{config.subtitle}</p>
           </div>
         </aside>
 
@@ -164,7 +165,7 @@ function CurriculumLevelPage() {
               {levelName} ({config.rating})
             </p>
             <h2 className="level-title mt-2 font-display font-bold text-text">{config.title}</h2>
-            <p className="level-body mt-2 text-text/88">{config.subtitle}</p>
+            <p className="level-body mt-2 break-words text-text/88">{config.subtitle}</p>
           </div>
 
           <div className="space-y-4">
@@ -199,7 +200,8 @@ function CurriculumLevelPage() {
           </div>
         </section>
       </motion.section>
-    </PageTransition>
+      </PageTransition>
+    </div>
   );
 }
 

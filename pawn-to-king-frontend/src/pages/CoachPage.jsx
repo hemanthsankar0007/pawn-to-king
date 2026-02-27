@@ -54,7 +54,7 @@ function CoachPage() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-screen overflow-hidden flex items-center"
+      className="relative flex w-full min-h-[85svh] items-center overflow-hidden sm:min-h-screen"
       style={{
         background: "linear-gradient(135deg, #0a0f1d 0%, #0e1628 40%, #0a0f1d 100%)",
       }}
@@ -62,7 +62,7 @@ function CoachPage() {
       {/* Layer 1 — radial gold aura */}
       <motion.div
         style={{ y: auraY }}
-        className="pointer-events-none absolute right-[-5%] top-[10%] h-[70vh] w-[55vw]"
+        className="pointer-events-none absolute right-[-5%] top-[10%] hidden h-[70vh] w-[55vw] md:block"
       >
         <div
           className="absolute inset-0"
@@ -75,7 +75,7 @@ function CoachPage() {
       {/* Layer 2 — chess king silhouette */}
       <motion.div
         style={{ y: silhouetteY }}
-        className="pointer-events-none absolute left-[38%] top-[5%] select-none"
+        className="pointer-events-none absolute left-[38%] top-[5%] hidden select-none sm:block"
         aria-hidden="true"
       >
         <span
@@ -95,8 +95,8 @@ function CoachPage() {
       </motion.div>
 
       {/* Main content grid */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-24 lg:px-16">
-        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-16 lg:py-24">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-24">
 
           {/* ── IMAGE COLUMN ── */}
           <motion.div
@@ -223,7 +223,7 @@ function CoachPage() {
             </motion.p>
 
             {/* Profile Icons */}
-            <div className="mt-5 flex items-center gap-5">
+            <div className="mt-5 flex flex-wrap items-center gap-4 sm:gap-5">
               {[
                 {
                   label: "Chess.com",
@@ -313,7 +313,7 @@ function CoachPage() {
             {/* Achievements */}
             <div className="mt-10">
               <p className="mb-4 text-xs uppercase tracking-[0.25em] text-text/45">Achievements</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {achievements.map((item, i) => (
                   <AchievementMedal key={item.label} item={item} index={i} />
                 ))}

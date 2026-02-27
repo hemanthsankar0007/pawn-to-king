@@ -7,7 +7,7 @@ const { ensureAppConfig } = require("../config/appConfig");
 const getDashboard = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select(
-      "_id name email chessRating age phone currentLevel currentTopic role batchId finalSchedule"
+      "_id name email chessRating age phone currentLevel currentTopic role mustChangePassword batchId finalSchedule"
     );
 
     if (!user) {
@@ -17,14 +17,23 @@ const getDashboard = async (req, res) => {
     const levelTopics = await Topic.find({ levelName: user.currentLevel }).select("_id").lean();
     const totalTopics = levelTopics.length || MAX_TOPICS_PER_LEVEL;
 
-    const completedTopics =
+    const sequentialCompletedTopics = Math.min(
+      Math.max(Number(user.currentTopic) - 1, 0),
+      Number(totalTopics)
+    );
+
+    const completedBySubmissions =
       levelTopics.length > 0
         ? await Submission.countDocuments({
             userId: user._id,
             topicId: { $in: levelTopics.map((topic) => topic._id) },
             completed: true
           })
-        : Math.min(Math.max(user.currentTopic - 1, 0), MAX_TOPICS_PER_LEVEL);
+        : 0;
+
+    // Keep dashboard progress aligned with unlocked topic progression while still honoring
+    // explicit submission completion when it is higher.
+    const completedTopics = Math.max(completedBySubmissions, sequentialCompletedTopics);
 
     const progressPercentage = Math.max(
       0,
@@ -50,6 +59,7 @@ const getDashboard = async (req, res) => {
         currentLevel: user.currentLevel,
         currentTopic: user.currentTopic,
         role: user.role,
+        mustChangePassword: Boolean(user.mustChangePassword),
         batchId: user.batchId,
         finalSchedule: user.finalSchedule || { days: [], time: "", timezone: "" }
       },

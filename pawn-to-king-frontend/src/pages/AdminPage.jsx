@@ -5,6 +5,7 @@ import {
   getAdminBatches,
   getAdminStudents,
   rejectAdminApplication,
+  deleteAdminStudent,
   resetAdminStudentPassword,
   unlockAdminStudentNextLevel,
   updateAdminStudentLevel,
@@ -37,6 +38,9 @@ function AdminPage() {
   });
   const [approvalPassword, setApprovalPassword] = useState("");
   const [approvalBusy, setApprovalBusy] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const TIMEZONE_OPTIONS = [
@@ -238,6 +242,59 @@ function AdminPage() {
     }
   };
 
+  const openDeleteModal = (student) => {
+    setDeleteCandidate(student);
+    setDeleteConfirmText("");
+  };
+
+  const closeDeleteModal = () => {
+    if (deleteBusy) {
+      return;
+    }
+    setDeleteCandidate(null);
+    setDeleteConfirmText("");
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!deleteCandidate) {
+      return;
+    }
+
+    if (deleteConfirmText.trim().toUpperCase() !== "DELETE") {
+      setErrorMessage("Type DELETE to confirm student removal.");
+      return;
+    }
+
+    const finalConfirmation = window.confirm(
+      `Final confirmation: permanently delete ${deleteCandidate.name}?`
+    );
+    if (!finalConfirmation) {
+      return;
+    }
+
+    try {
+      setBusyId(`delete-${deleteCandidate._id}`);
+      setDeleteBusy(true);
+      setErrorMessage("");
+
+      await deleteAdminStudent(deleteCandidate._id);
+
+      setServerMessage({
+        type: "warning",
+        text: `Student ${deleteCandidate.name} deleted successfully.`
+      });
+
+      setDeleteCandidate(null);
+      setDeleteConfirmText("");
+      await fetchStudents(studentLevelFilter);
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to delete student.");
+    } finally {
+      setDeleteBusy(false);
+      setBusyId("");
+    }
+  };
+
   const levelOptions = useMemo(() => ["All", ...LEVEL_NAMES], []);
 
   if (loading) {
@@ -385,8 +442,107 @@ function AdminPage() {
           </label>
         </div>
 
-        <div className="mt-6 overflow-x-auto">
-          <table className="min-w-full border-collapse text-sm">
+        <div className="mt-6 space-y-4 lg:hidden">
+          {students.map((student) => (
+            <article
+              key={student._id}
+              className="rounded-xl border border-gold/15 bg-bg/45 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-text">{student.name}</p>
+                  <p className="text-xs text-text/60">{student.email}</p>
+                </div>
+                <span className="text-xs font-semibold text-gold">{student.progressPercentage}%</span>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-text/60">Level</p>
+                  <p className="mt-1 font-semibold text-gold">{student.currentLevel}</p>
+                  <select
+                    value={fieldState[student._id]?.level || student.currentLevel}
+                    onChange={(event) =>
+                      saveFieldState(student._id, { level: event.target.value })
+                    }
+                    className="mt-2 w-full rounded-lg border border-gold/25 bg-bg/80 px-2 py-2 text-xs outline-none focus:border-gold"
+                  >
+                    {LEVEL_NAMES.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handleLevelUpdate(student._id)}
+                    disabled={busyId === `level-${student._id}`}
+                    className="secondary-btn mt-2 inline-flex min-h-[2.3rem] w-full items-center justify-center rounded-lg px-3 text-xs disabled:opacity-60"
+                  >
+                    Set Level
+                  </button>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-text/60">Topic</p>
+                  <p className="mt-1 text-sm text-text">{student.currentTopic}</p>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={fieldState[student._id]?.topic || String(student.currentTopic)}
+                    onChange={(event) =>
+                      saveFieldState(student._id, { topic: event.target.value })
+                    }
+                    className="mt-2 w-full rounded-lg border border-gold/25 bg-bg/80 px-2 py-2 text-xs outline-none focus:border-gold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleTopicUpdate(student._id)}
+                    disabled={busyId === `topic-${student._id}`}
+                    className="secondary-btn mt-2 inline-flex min-h-[2.3rem] w-full items-center justify-center rounded-lg px-3 text-xs disabled:opacity-60"
+                  >
+                    Update Topic
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-4 text-xs text-text/70">
+                Rating: {student.chessRating ?? "N/A"}
+              </div>
+
+              <div className="mt-4 grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleUnlockLevel(student._id)}
+                  disabled={busyId === `unlock-${student._id}`}
+                  className="primary-btn inline-flex min-h-[2.3rem] w-full items-center justify-center rounded-lg px-3 text-xs disabled:opacity-60"
+                >
+                  Unlock Next Level
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleResetPassword(student._id)}
+                  disabled={busyId === `password-${student._id}`}
+                  className="secondary-btn inline-flex min-h-[2.3rem] w-full items-center justify-center rounded-lg px-3 text-xs disabled:opacity-60"
+                >
+                  Reset Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openDeleteModal(student)}
+                  disabled={busyId === `delete-${student._id}`}
+                  className="inline-flex min-h-[2.3rem] w-full items-center justify-center rounded-lg border border-red-400/45 bg-red-500/10 px-3 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-60"
+                >
+                  {busyId === `delete-${student._id}` ? "Removing..." : "Remove Student"}
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-6 hidden overflow-x-auto lg:block">
+          <table className="min-w-[980px] border-collapse text-sm lg:min-w-full">
             <thead>
               <tr className="border-b border-gold/20 text-left text-text/70">
                 <th className="px-3 py-2">Name</th>
@@ -468,6 +624,14 @@ function AdminPage() {
                     >
                       Reset Password
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openDeleteModal(student)}
+                      disabled={busyId === `delete-${student._id}`}
+                      className="inline-flex min-h-[2.2rem] w-full items-center justify-center rounded-lg border border-red-400/45 bg-red-500/10 px-3 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-60"
+                    >
+                      {busyId === `delete-${student._id}` ? "Removing..." : "Remove Student"}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -475,6 +639,64 @@ function AdminPage() {
           </table>
         </div>
       </section>
+
+      {deleteCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-red-400/40 bg-card p-6 shadow-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-display text-xl text-red-200">Delete Student</h3>
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                className="text-text/50 transition hover:text-text"
+                disabled={deleteBusy}
+              >
+                &#x2715;
+              </button>
+            </div>
+
+            <p className="mt-3 text-sm text-text/85">
+              This action permanently deletes the student account and related submissions from the
+              database.
+            </p>
+            <p className="mt-2 text-sm text-text/90">
+              <span className="text-text/60">Student:</span> {deleteCandidate.name} ({deleteCandidate.email})
+            </p>
+
+            <label className="mt-4 block text-xs uppercase tracking-wider text-text/65">
+              Type <span className="font-semibold text-red-200">DELETE</span> to confirm
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(event) => setDeleteConfirmText(event.target.value)}
+                className="mt-2 w-full rounded-lg border border-red-300/35 bg-bg/80 px-3 py-2 text-sm outline-none focus:border-red-200"
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+            </label>
+
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteStudent}
+                disabled={deleteBusy}
+                className="inline-flex min-h-[2.75rem] flex-1 items-center justify-center rounded-lg border border-red-300/50 bg-red-500/15 px-4 text-sm font-semibold text-red-200 transition hover:bg-red-500/25 disabled:opacity-60"
+              >
+                {deleteBusy ? "Deleting..." : "Delete Permanently"}
+              </button>
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                disabled={deleteBusy}
+                className="secondary-btn inline-flex min-h-[2.75rem] items-center rounded-lg px-4 text-sm font-semibold disabled:opacity-60"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {pendingApproval && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-lg rounded-2xl border border-gold/30 bg-card p-6 shadow-2xl">

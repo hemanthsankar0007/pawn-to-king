@@ -249,7 +249,7 @@ function HomeHero() {
   return (
     <section
       ref={ref}
-      className="relative isolate min-h-screen overflow-hidden"
+      className="relative isolate min-h-[78svh] overflow-hidden sm:min-h-screen"
       style={{
         width: "100vw",
         marginLeft: "calc(50% - 50vw)",
@@ -275,8 +275,8 @@ function HomeHero() {
       <div className="absolute inset-x-0 bottom-0 h-[35%] bg-[linear-gradient(to_top,#0b0f19_0%,#0b0f19_15%,transparent_100%)]" />
 
       {/* Content sits on top */}
-      <div className="relative z-10 flex min-h-screen items-center">
-        <div className="w-full max-w-7xl px-6 py-24 lg:pl-20 lg:pr-12">
+      <div className="relative z-10 flex min-h-[78svh] items-center sm:min-h-screen">
+        <div className="w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:pl-20 lg:pr-12">
 
           {/* Subtitle */}
           <motion.p
@@ -338,7 +338,7 @@ function HomeHero() {
             <MagneticWrapper className="inline-block" strength={4}>
               <Link
                 to="/login"
-                className="primary-btn inline-flex rounded-lg px-6 py-3 text-sm font-semibold"
+                className="primary-btn inline-flex w-full items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold sm:w-auto"
               >
                 Login
               </Link>
@@ -347,7 +347,7 @@ function HomeHero() {
             <MagneticWrapper className="inline-block" strength={4}>
               <a
                 href="#program-structure"
-                className="secondary-btn inline-flex rounded-lg px-6 py-3 text-sm font-semibold"
+                className="secondary-btn inline-flex w-full items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold sm:w-auto"
               >
                 View Program
               </a>

@@ -3,7 +3,7 @@ const User = require("../models/User");
 const getCurrentStudent = async (req, res) => {
   try {
     const student = await User.findById(req.user.userId)
-      .select("_id name email role currentLevel currentTopic batchId")
+      .select("_id name email role currentLevel currentTopic mustChangePassword batchId")
       .populate("batchId")
       .lean();
 

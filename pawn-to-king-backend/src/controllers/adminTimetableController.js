@@ -114,54 +114,111 @@ const parsePositiveInt = (value, fallback) => {
   return parsed;
 };
 
-const createBatch = async (req, res) => {
-  try {
-    const { name, level, days, time, timezone, meetLink } = req.body || {};
-    const trimmedName = String(name || "").trim();
-    const normalizedLevel = String(level || "").trim();
-    const normalizedDays = normalizeBatchDays(days);
-    const normalizedTime = String(time || "").trim();
-    const normalizedTimezone = String(timezone || "").trim();
-    const normalizedMeetLink = parseUrl(meetLink);
+const validateBatchInput = ({ name, level, days, time, timezone, meetLink }) => {
+  const trimmedName = String(name || "").trim();
+  const normalizedLevel = String(level || "").trim();
+  const normalizedDays = normalizeBatchDays(days);
+  const normalizedTime = String(time || "").trim();
+  const normalizedTimezone = String(timezone || "").trim();
+  const normalizedMeetLink = parseUrl(meetLink);
+  const parsedRange = parseTimeRange(normalizedTime);
 
-    const errors = [];
+  const errors = [];
 
-    if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 80) {
-      errors.push("Batch name must be between 2 and 80 characters.");
-    }
+  if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 80) {
+    errors.push("Batch name must be between 2 and 80 characters.");
+  }
 
-    if (!LEVEL_NAMES.includes(normalizedLevel)) {
-      errors.push("Valid level is required.");
-    }
+  if (!LEVEL_NAMES.includes(normalizedLevel)) {
+    errors.push("Valid level is required.");
+  }
 
-    if (normalizedDays.length === 0 || normalizedDays.some((day) => !VALID_DAYS.has(day))) {
-      errors.push("At least one valid day is required.");
-    }
+  if (normalizedDays.length === 0 || normalizedDays.some((day) => !VALID_DAYS.has(day))) {
+    errors.push("At least one valid day is required.");
+  }
 
-    if (!parseTimeRange(normalizedTime)) {
-      errors.push("Valid batch time is required (for example: 6:00 PM - 7:00 PM).");
-    }
+  if (!parsedRange) {
+    errors.push("Valid batch time is required (for example: 6:00 PM - 7:00 PM).");
+  }
 
-    if (!normalizedTimezone) {
-      errors.push("Timezone is required.");
-    }
+  if (!normalizedTimezone) {
+    errors.push("Timezone is required.");
+  }
 
-    if (!normalizedMeetLink) {
-      errors.push("Valid Meet link is required.");
-    }
+  if (!normalizedMeetLink) {
+    errors.push("Valid Meet link is required.");
+  }
 
-    if (errors.length > 0) {
-      return res.status(400).json({ message: "Please fix the batch details.", errors });
-    }
-
-    const batch = await Batch.create({
+  return {
+    errors,
+    payload: {
       name: trimmedName,
       level: normalizedLevel,
       days: normalizedDays,
       time: normalizedTime,
       timezone: normalizedTimezone,
       meetLink: normalizedMeetLink
-    });
+    },
+    parsedRange
+  };
+};
+
+const normalizeStudentIds = (studentIds) =>
+  Array.isArray(studentIds)
+    ? [...new Set(studentIds.map((id) => String(id || "").trim()).filter(Boolean))]
+    : [];
+
+const validateStudentSelection = async (studentIds) => {
+  if (studentIds.some((id) => !mongoose.isValidObjectId(id))) {
+    return { ok: false, message: "One or more student ids are invalid." };
+  }
+
+  const students = await User.find({
+    _id: { $in: studentIds },
+    role: "student"
+  }).select("_id");
+
+  if (students.length !== studentIds.length) {
+    return { ok: false, message: "One or more selected users are not valid students." };
+  }
+
+  return { ok: true };
+};
+
+const syncBatchAssignments = async (batchId, studentIds) => {
+  const normalizedBatchId = String(batchId);
+
+  await User.updateMany(
+    {
+      role: "student",
+      batchId: normalizedBatchId,
+      _id: { $nin: studentIds }
+    },
+    { $set: { batchId: null } }
+  );
+
+  if (studentIds.length > 0) {
+    await User.updateMany(
+      {
+        role: "student",
+        _id: { $in: studentIds }
+      },
+      { $set: { batchId: normalizedBatchId } }
+    );
+  }
+
+  return User.countDocuments({ role: "student", batchId: normalizedBatchId });
+};
+
+const createBatch = async (req, res) => {
+  try {
+    const { payload, errors } = validateBatchInput(req.body || {});
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Please fix the batch details.", errors });
+    }
+
+    const batch = await Batch.create(payload);
 
     return res.status(201).json({ message: "Batch created.", batch });
   } catch (error) {
@@ -169,6 +226,97 @@ const createBatch = async (req, res) => {
       return res.status(409).json({ message: "A batch with this level and name already exists." });
     }
     return res.status(500).json({ message: "Unable to create batch right now." });
+  }
+};
+
+const updateBatch = async (req, res) => {
+  try {
+    const { batchId } = req.params;
+    const { studentIds } = req.body || {};
+
+    if (!mongoose.isValidObjectId(batchId)) {
+      return res.status(400).json({ message: "Invalid batch id." });
+    }
+
+    const batch = await Batch.findById(batchId);
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found." });
+    }
+
+    const candidatePayload = {
+      name: req.body?.name ?? batch.name,
+      level: req.body?.level ?? batch.level,
+      days: req.body?.days ?? batch.days,
+      time: req.body?.time ?? batch.time,
+      timezone: req.body?.timezone ?? batch.timezone,
+      meetLink: req.body?.meetLink ?? batch.meetLink
+    };
+
+    const { payload, errors, parsedRange } = validateBatchInput(candidatePayload);
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Please fix the batch details.", errors });
+    }
+
+    const previous = {
+      level: batch.level,
+      time: batch.time,
+      meetLink: batch.meetLink
+    };
+
+    batch.name = payload.name;
+    batch.level = payload.level;
+    batch.days = payload.days;
+    batch.time = payload.time;
+    batch.timezone = payload.timezone;
+    batch.meetLink = payload.meetLink;
+    await batch.save();
+
+    let assignedStudentCount = await User.countDocuments({ role: "student", batchId: batch._id });
+
+    if (Array.isArray(studentIds)) {
+      const normalizedIds = normalizeStudentIds(studentIds);
+      const validation = await validateStudentSelection(normalizedIds);
+      if (!validation.ok) {
+        return res.status(400).json({ message: validation.message });
+      }
+      assignedStudentCount = await syncBatchAssignments(batch._id, normalizedIds);
+    }
+
+    const shouldSyncSessions =
+      previous.level !== payload.level ||
+      previous.time !== payload.time ||
+      previous.meetLink !== payload.meetLink;
+
+    if (shouldSyncSessions && parsedRange) {
+      await Session.updateMany(
+        {
+          batchId: batch._id,
+          status: "Scheduled",
+          date: { $gte: startOfDay(new Date()) }
+        },
+        {
+          $set: {
+            level: payload.level,
+            startTime: parsedRange.startTime,
+            endTime: parsedRange.endTime,
+            meetLink: payload.meetLink
+          }
+        }
+      );
+    }
+
+    return res.json({
+      message: "Batch updated successfully.",
+      batch: {
+        ...batch.toObject(),
+        assignedStudentCount
+      }
+    });
+  } catch (error) {
+    if (error?.code === 11000) {
+      return res.status(409).json({ message: "A batch with this level and name already exists." });
+    }
+    return res.status(500).json({ message: "Unable to update batch right now." });
   }
 };
 
@@ -248,33 +396,18 @@ const assignStudentsToBatch = async (req, res) => {
       return res.status(404).json({ message: "Batch not found." });
     }
 
-    const normalizedIds = Array.isArray(studentIds)
-      ? [...new Set(studentIds.map((id) => String(id || "").trim()).filter(Boolean))]
-      : [];
-
-    if (normalizedIds.some((id) => !mongoose.isValidObjectId(id))) {
-      return res.status(400).json({ message: "One or more student ids are invalid." });
+    const normalizedIds = normalizeStudentIds(studentIds);
+    const validation = await validateStudentSelection(normalizedIds);
+    if (!validation.ok) {
+      return res.status(400).json({ message: validation.message });
     }
 
-    const students = await User.find({
-      _id: { $in: normalizedIds },
-      role: "student"
-    }).select("_id");
-
-    if (students.length !== normalizedIds.length) {
-      return res.status(400).json({ message: "One or more selected users are not valid students." });
-    }
-
-    await User.updateMany({ role: "student" }, { $set: { batchId: null } });
-
-    if (normalizedIds.length > 0) {
-      await User.updateMany({ _id: { $in: normalizedIds } }, { $set: { batchId: batch._id } });
-    }
+    const assignedStudentCount = await syncBatchAssignments(batch._id, normalizedIds);
 
     return res.json({
       message: "Batch updated successfully",
       batchId: batch._id,
-      assignedStudentCount: normalizedIds.length
+      assignedStudentCount
     });
   } catch (_error) {
     return res.status(500).json({ message: "Unable to assign students right now." });
@@ -647,6 +780,7 @@ const getWeeklyTimetable = async (_req, res) => {
 
 module.exports = {
   createBatch,
+  updateBatch,
   getBatches,
   getBatchStudents,
   getStudentsForBatchAssignment,

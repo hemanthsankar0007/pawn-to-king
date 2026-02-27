@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { changeUserPassword } from "../api/apiService";
+import StatusMessage from "./StatusMessage";
 import { setFlashMessage } from "../utils/flashMessage";
 import logo from "../../assets/logo.png";
 
@@ -45,7 +47,15 @@ function HamburgerIcon({ open }) {
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState(null);
+  const { isAuthenticated, profile, logout, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,7 +74,81 @@ function Header() {
     setFlashMessage({ type: "info", text: "Logged out successfully." });
     logout();
     setMenuOpen(false);
+    setPasswordModalOpen(false);
     navigate("/login", { replace: true });
+  };
+
+  const openPasswordModal = () => {
+    setPasswordMessage(null);
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+    setPasswordModalOpen(true);
+  };
+
+  const closePasswordModal = () => {
+    if (passwordBusy) {
+      return;
+    }
+    setPasswordModalOpen(false);
+  };
+
+  const handlePasswordFieldChange = (field, value) => {
+    setPasswordForm((previous) => ({
+      ...previous,
+      [field]: value
+    }));
+  };
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+
+    const currentPassword = String(passwordForm.currentPassword || "").trim();
+    const newPassword = String(passwordForm.newPassword || "").trim();
+    const confirmPassword = String(passwordForm.confirmPassword || "").trim();
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordMessage({ type: "error", text: "Please fill all password fields." });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: "error", text: "New password and confirm password must match." });
+      return;
+    }
+
+    try {
+      setPasswordBusy(true);
+      setPasswordMessage(null);
+      const response = await changeUserPassword({
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      setPasswordMessage({
+        type: "success",
+        text: response?.message || "Password updated successfully."
+      });
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+      try {
+        await refreshProfile();
+      } catch (_error) {
+        // Password update already succeeded; ignore non-critical profile refresh issues.
+      }
+    } catch (error) {
+      setPasswordMessage({
+        type: "error",
+        text: error?.response?.data?.message || "Unable to update password right now."
+      });
+    } finally {
+      setPasswordBusy(false);
+    }
   };
 
   return (
@@ -75,26 +159,43 @@ function Header() {
           {isAuthenticated ? (
             <div className="flex min-w-0 cursor-default items-center gap-3">
               <img src={logo} alt="Pawn to King logo" className="h-9 w-9 rounded-md object-contain" />
-              <span className="font-display text-xl tracking-wide text-gold">Pawn to King</span>
+              <span className="truncate font-display text-lg tracking-wide text-gold sm:text-xl">
+                Pawn to King
+              </span>
             </div>
           ) : (
             <Link to="/" className="flex min-w-0 items-center gap-3">
               <img src={logo} alt="Pawn to King logo" className="h-9 w-9 rounded-md object-contain" />
-              <span className="font-display text-xl tracking-wide text-gold">Pawn to King</span>
+              <span className="truncate font-display text-lg tracking-wide text-gold sm:text-xl">
+                Pawn to King
+              </span>
             </Link>
           )}
 
           {/* Desktop nav */}
           {isAuthenticated ? (
-            <button
-              type="button"
-              className="secondary-btn hidden min-h-[2.75rem] items-center rounded-lg px-5 text-sm font-semibold text-gold md:inline-flex"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+            <div className="hidden items-center gap-3 lg:flex">
+              <button
+                type="button"
+                className={`inline-flex min-h-[2.75rem] items-center rounded-lg px-5 text-sm font-semibold ${
+                  profile?.user?.mustChangePassword
+                    ? "primary-btn"
+                    : "secondary-btn text-gold"
+                }`}
+                onClick={openPasswordModal}
+              >
+                Set Password
+              </button>
+              <button
+                type="button"
+                className="secondary-btn inline-flex min-h-[2.75rem] items-center rounded-lg px-5 text-sm font-semibold text-gold"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
           ) : (
-            <nav className="hidden items-center gap-7 text-base md:flex">
+            <nav className="hidden items-center gap-6 text-base lg:flex">
               {commonLinks.map((link) => (
                 <NavLink key={link.to} to={link.to} end={link.end} className={navLinkClass}>
                   {link.label}
@@ -145,7 +246,7 @@ function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-72 max-w-[80vw] flex-col border-l border-gold/15 bg-bg/98 px-6 pb-10 pt-24 lg:hidden"
+              className="fixed right-0 top-0 z-50 flex h-full w-[min(86vw,20rem)] flex-col border-l border-gold/15 bg-bg/98 px-5 pb-8 pt-24 lg:hidden"
             >
               {/* Nav links */}
               <div className="flex flex-col gap-6">
@@ -182,6 +283,16 @@ function Header() {
                     <div className="mt-2 h-px bg-gold/10" />
                     <button
                       type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        openPasswordModal();
+                      }}
+                      className="secondary-btn inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-lg text-sm font-semibold"
+                    >
+                      Set Password
+                    </button>
+                    <button
+                      type="button"
                       onClick={handleLogout}
                       className="secondary-btn inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-lg text-sm font-semibold"
                     >
@@ -200,9 +311,82 @@ function Header() {
           </>
         )}
       </AnimatePresence>
+
+      {passwordModalOpen ? (
+        <div className="fixed inset-0 z-[70] bg-black/70 p-4 backdrop-blur-sm md:p-8">
+          <div className="mx-auto w-full max-w-xl rounded-2xl border border-gold/30 bg-card/95 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.5)] md:p-8">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-xs uppercase tracking-[0.22em] text-gold">Set Password</p>
+              <button
+                type="button"
+                onClick={closePasswordModal}
+                className="secondary-btn inline-flex min-h-[2.5rem] items-center rounded-lg px-3 text-xs font-semibold"
+              >
+                Close
+              </button>
+            </div>
+
+            <h2 className="font-display text-2xl">Update Account Password</h2>
+            <p className="mt-2 text-sm text-text/75">
+              {profile?.user?.mustChangePassword
+                ? "You are using a temporary password. Set a new password now."
+                : "Change your password anytime to keep your account secure."}
+            </p>
+
+            <form className="mt-5 grid gap-3" onSubmit={handlePasswordSubmit}>
+              <label className="text-xs uppercase tracking-[0.12em] text-text/60">
+                Current Password
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(event) =>
+                    handlePasswordFieldChange("currentPassword", event.target.value)
+                  }
+                  className="mt-2 w-full rounded-lg border border-gold/20 bg-bg/70 px-3 py-2.5 text-sm outline-none focus:border-gold"
+                  autoComplete="current-password"
+                  required
+                />
+              </label>
+              <label className="text-xs uppercase tracking-[0.12em] text-text/60">
+                New Password
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(event) => handlePasswordFieldChange("newPassword", event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-gold/20 bg-bg/70 px-3 py-2.5 text-sm outline-none focus:border-gold"
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+              <label className="text-xs uppercase tracking-[0.12em] text-text/60">
+                Confirm Password
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(event) =>
+                    handlePasswordFieldChange("confirmPassword", event.target.value)
+                  }
+                  className="mt-2 w-full rounded-lg border border-gold/20 bg-bg/70 px-3 py-2.5 text-sm outline-none focus:border-gold"
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+
+              <StatusMessage type={passwordMessage?.type || "info"} text={passwordMessage?.text} />
+
+              <button
+                type="submit"
+                disabled={passwordBusy}
+                className="primary-btn mt-1 inline-flex min-h-[2.75rem] items-center justify-center rounded-lg px-5 text-sm font-semibold disabled:opacity-60"
+              >
+                {passwordBusy ? "Updating Password..." : "Update Password"}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
 
 export default Header;
-

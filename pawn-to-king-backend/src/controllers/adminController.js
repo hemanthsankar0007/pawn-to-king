@@ -1,6 +1,8 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
+const { isValidObjectId } = require("mongoose");
 const Application = require("../models/Application");
+const Submission = require("../models/Submission");
 const User = require("../models/User");
 const { LEVEL_NAMES, MAX_TOPICS_PER_LEVEL } = require("../utils/constants");
 
@@ -21,6 +23,7 @@ const buildStudentPayload = (student) => ({
   chessRating: student.chessRating,
   currentLevel: student.currentLevel,
   currentTopic: student.currentTopic,
+  mustChangePassword: Boolean(student.mustChangePassword),
   progressPercentage: progressFromTopic(student.currentTopic),
   batchId: student.batchId || null,
   finalSchedule: student.finalSchedule || { days: [], time: "", timezone: "" },
@@ -106,6 +109,7 @@ const approveApplication = async (req, res) => {
       chessRating: application.ratingUsed,
       currentLevel: confirmedLevel,
       currentTopic: 1,
+      mustChangePassword: true,
       batchId: confirmedBatchId,
       finalSchedule: {
         days: confirmedDays,
@@ -282,6 +286,7 @@ const resetStudentPassword = async (req, res) => {
 
     const temporaryPassword = createTemporaryPassword();
     student.password = await bcrypt.hash(temporaryPassword, 12);
+    student.mustChangePassword = true;
     await student.save();
 
     console.log(
@@ -297,6 +302,41 @@ const resetStudentPassword = async (req, res) => {
   }
 };
 
+const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid student id." });
+    }
+
+    const student = await User.findOne({ _id: id, role: "student" }).select("_id name email");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    await Promise.all([
+      Submission.deleteMany({ userId: student._id }),
+      Application.updateMany(
+        { approvedUserId: student._id },
+        { $set: { approvedUserId: null } }
+      ),
+      User.deleteOne({ _id: student._id, role: "student" })
+    ]);
+
+    return res.json({
+      message: "Student deleted successfully.",
+      deletedStudent: {
+        _id: student._id,
+        name: student.name,
+        email: student.email
+      }
+    });
+  } catch (_error) {
+    return res.status(500).json({ message: "Unable to delete student right now." });
+  }
+};
+
 module.exports = {
   getApplications,
   approveApplication,
@@ -305,5 +345,6 @@ module.exports = {
   updateStudentLevel,
   unlockNextLevel,
   updateStudentTopic,
-  resetStudentPassword
+  resetStudentPassword,
+  deleteStudent
 };
